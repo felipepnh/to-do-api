@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  to-do-api:
+    container_name: to-do-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - APP_ENV=docker
+      - PORT=1323
+      - DATABASE_DRIVER_NAME=postgres
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_HOST=service-db
+      - DATABASE_PORT=5432
+      - DATABASE_DATABASE=postgres
+      - DATABASE_SSL=disable
+      - DATABASE_MAX_OPEN_CONNECTIONS=5
+      - DATABASE_MAX_IDLE_CONNECTIONS=2
+      - DATABASE_CONN_MAX_LIFETIME_MINUTES=30
+    ports:
+      - "1323:1323"
+    depends_on:
+      - service-db
+    networks:
+      - service-network
+  service-db:
+    image: postgres:latest
+    volumes:
+      - ./internal/infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+      - "5432:5432"
+    networks:
+      - service-network
+networks:
+  service-network:
+    driver: bridge
